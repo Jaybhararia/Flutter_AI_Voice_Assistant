@@ -153,7 +153,7 @@ class _Home_PageState extends State<Home_Page> {
               await startListening();
             }
             else if(speechToText.isListening) {
-              final Speech = await OpenAIService().isArtPromptAPI(lastWords);
+              final Speech = await OpenAIService().chatGPTAPI(lastWords);
               if(Speech.contains('http')){
                 generatedimage = Speech;
                 generatedtext = null;

@@ -5,49 +5,6 @@ import 'package:voice_assistant/Secret_Key.dart';
 class OpenAIService {
   final List<Map<String, String>> messages = [];
 
-  Future<String> isArtPromptAPI(String prompt) async {
-    try {
-      final res = await http.post(
-        Uri.parse('https://api.openai.com/v1/chat/completions'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $secret_key',
-        },
-        body: jsonEncode({
-          "model": "gpt-3.5-turbo",
-          "messages": [
-            {
-              'role': 'user',
-              'content':
-              'Does this message want to generate an AI picture, image, art or anything similar? $prompt . Simply answer with a yes or no.',
-            }
-          ],
-        }),
-      );
-      print(res.body);
-      if (res.statusCode == 200) {
-        String content =
-        jsonDecode(res.body)['choices'][0]['message']['content'];
-        content = content.trim();
-
-        switch (content) {
-          case 'Yes':
-          case 'yes':
-          case 'Yes.':
-          case 'yes.':
-            final res = await dallEAPI(prompt);
-            return res;
-          default:
-            final res = await chatGPTAPI(prompt);
-            return res;
-        }
-      }
-      return 'An internal error occurred';
-    } catch (e) {
-      return e.toString();
-    }
-  }
-
   Future<String> chatGPTAPI(String prompt) async {
     messages.add({
       'role': 'user',
@@ -55,10 +12,11 @@ class OpenAIService {
     });
     try {
       final res = await http.post(
-        Uri.parse('https://api.openai.com/v1/chat/completions'),
+        Uri.parse('https://chat-gpt26.p.rapidapi.com'),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $secret_key',
+          'X-RapidAPI-Host': 'chat-gpt26.p.rapidapi.com',
+          'X-RapidAPI-Key': secret_key,
         },
         body: jsonEncode({
           "model": "gpt-3.5-turbo",
@@ -76,40 +34,6 @@ class OpenAIService {
           'content': content,
         });
         return content;
-      }
-      return 'Servers are busy, Come back later';
-    } catch (e) {
-      return 'Servers are busy, Come back later';
-    }
-  }
-
-  Future<String> dallEAPI(String prompt) async {
-    messages.add({
-      'role': 'user',
-      'content': prompt,
-    });
-    try {
-      final res = await http.post(
-        Uri.parse('https://api.openai.com/v1/images/generations'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $secret_key',
-        },
-        body: jsonEncode({
-          'prompt': prompt,
-          'n': 1,
-        }),
-      );
-
-      if (res.statusCode == 200) {
-        String imageUrl = jsonDecode(res.body)['data'][0]['url'];
-        imageUrl = imageUrl.trim();
-
-        messages.add({
-          'role': 'assistant',
-          'content': imageUrl,
-        });
-        return imageUrl;
       }
       return 'Servers are busy, Come back later';
     } catch (e) {
